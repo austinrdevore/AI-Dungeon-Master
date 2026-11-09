@@ -2,12 +2,8 @@
 
 from ai import generate_ai_response
 from engine import save_game, load_game
+from player import Player
 
-DEFAULT_PLAYER = {
-    "name": "Player",
-    "hp": 20,
-    "inventory": ["broken dagger"]
-}
 
 DEFAULT_WORLD = {
     "location": "forest",
@@ -17,7 +13,7 @@ DEFAULT_WORLD = {
 }
 
 def game_loop():
-    player = dict(DEFAULT_PLAYER)
+    player = Player()
     world = {**DEFAULT_WORLD}
     history = []
 
@@ -25,13 +21,14 @@ def game_loop():
     if saved:
         choice = input("Saved game found. Load it? (y/n): ").strip().lower()
         if choice == "y":
-            world, player, history = saved["world"], saved["player"], saved["history"]
+            world, history = saved["world"], saved["history"]
+            player = Player.from_dict(saved["player"])
             print("Game loaded successfully.")
             if history:
                 print("Previously:")
                 print(history[-1]["content"])
     if not history:
-        print("Welcome to the game!")
+        print(f"Welcome to the game! You are a {player.race}!")
         print("During any turn, type 'save' to save your game, or 'quit' to quit the game.")
         print("You are standing in a forest. Nearby, a goblin watches you.")
     print("What will you do?")
@@ -44,7 +41,7 @@ def game_loop():
             break
 
         if action.lower() == "save":
-            save_game(world, player, history)
+            save_game(world, player.to_dict(), history)
             print("Game saved.")
             continue
     
